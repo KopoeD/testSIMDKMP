@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <stdint.h>
 #include <string>
 #include <iostream>
 #include <emmintrin.h>
@@ -29,10 +30,10 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 	N = strlen(s);
 	M = strlen(p);
 
-	// Динамический массив длины М
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ
 	int *d = (int*)malloc(M * sizeof(int));
 	int *op = (int*)malloc(M * sizeof(int));
-	// Вычисление префикс-функции
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	d[0] = 0;
 	op[0] = 0;
 	for (i = 1, j = 0; i < M; i++)
@@ -53,23 +54,10 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 			//std::cout << std::bitset<16>(ss) << std::endl;
 			//std::cout << std::bitset<16>(~ss) << std::endl;
 			unsigned long index;
-			unsigned char isNonzero = _BitScanForward(&index, ss);
 			//std::cout << index << std::endl;
-			if (isNonzero)
-			{
-				for (int k = i; k <= index + i; k++) {
-					d[k] = 0;
-				}
-				int num = index + i;
-				d[num] = 1;
-				j++;
-				i = num + 1;
-
-			}
-			else
-			{
-				i = i + 16;
-			}
+			_BitScanForward(&index, ss) ?
+			(i += index + 1, j++, memset(d + i, 0, index * sizeof(*d)),
+			d[index + i] = 1) : i += 16;
 		}
 		else {
 			bool change = false;
@@ -78,23 +66,8 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 				auto sseArr = _mm_loadu_si128((__m128i *) &rp[M - j - 1]);
 				auto mask = _mm_movemask_epi8(_mm_cmpeq_epi8(sseVal, sseArr));
 				unsigned long index;
-				unsigned char isNonzero = _BitScanForward(&index, mask);
-				if (isNonzero)
-				{
-					if (index < j) {
-						j++;
-						d[i] = j;
-						change = true;
-					}
-					else {
-						j = 0;
-					}
-
-				}
-				else
-				{
-					j = j - 16;
-				}
+				_BitScanForward(&index, mask) ?
+				(index < j ? change = true, d[i] = ++j : j = 0) : j -= 16;
 			}
 			if (!change) { j = 0; d[i] = j; }
 			i++;
@@ -110,7 +83,7 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 		std::cout << d[m] << " " << op[m] << std::endl;
 	}
 	std::cout << std::endl;
-	// Поиск
+	// пїЅпїЅпїЅпїЅпїЅ
 
 	/*for (i = 0, j = 0; i < N;) {
 		 auto sseFind= _mm_loadu_si128((__m128i *) &p[j]);
@@ -122,7 +95,7 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 		 {
 			 if ()
 			 int num = index + i;
-			 
+
 			 d[num] = 1;
 			 j++;
 			 i = num + 1;
