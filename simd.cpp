@@ -56,8 +56,8 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 			unsigned long index;
 			//std::cout << index << std::endl;
 			_BitScanForward(&index, ss) ?
-			(i += index + 1, j++, memset(d + i, 0, index * sizeof(*d)),
-			d[index + i] = 1) : i += 16;
+			(d[index + i] = 1, j++, memset(d + i, 0, index * sizeof(*d)),
+			i += index + 1) : i += 16;
 		}
 		else {
 			bool change = false;
