@@ -69,7 +69,7 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 				_BitScanForward(&index, mask) ?
 				(index < j ? change = true, d[i] = ++j : j = 0) : j -= 16;
 			}
-			if (!change) { j = 0; d[i] = j; }
+			change ? 0 : j = 0, d[i] = j;
 			i++;
 		}
 		/*for (int m = 0; m < M; m++) {
