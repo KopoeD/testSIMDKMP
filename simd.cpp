@@ -40,43 +40,31 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 	{
 		while (j > 0 && p[j] != p[i])
 			j = op[j - 1];
-		if (p[j] == p[i])
-			j++;
+		p[j] == p[i] ? j++ : 0;
 		op[i] = j;
 	}
+	__m128i sseVal;
+	__m128i sseArr;
+	int mask;
+	unsigned long index;
+	bool change = false;
 	//simd
 	for (i = 1, j = 0; i < M;) {
-		if (j == 0) {
-			auto sseVal = _mm_set1_epi8(p[j]);
-			auto sseArr = _mm_loadu_si128((__m128i *) &p[i]);
-			//uint8_t *val = (uint8_t*)&(_mm_cmpeq_epi8(sseVal, sseArr));
-			auto ss = _mm_movemask_epi8(_mm_cmpeq_epi8(sseVal, sseArr));
-			//std::cout << std::bitset<16>(ss) << std::endl;
-			//std::cout << std::bitset<16>(~ss) << std::endl;
-			unsigned long index;
-			//std::cout << index << std::endl;
-			_BitScanForward(&index, ss) ?
+		j ? (
+		change = false,
+		j > 0 && !change ? (
+			sseVal = _mm_set1_epi8(p[i]),
+			sseArr = _mm_loadu_si128((__m128i *) &rp[M - j - 1]),
+			mask = _mm_movemask_epi8(_mm_cmpeq_epi8(sseVal, sseArr)),
+			_BitScanForward(&index, mask) ?
+			(index < j ? change = true, d[i] = ++j : j = 0) : j -= 16) : (
+		change ? 0 : j = 0, d[i++] = j)) : (
+			sseVal = _mm_set1_epi8(p[j]),
+			sseArr = _mm_loadu_si128((__m128i *) &p[i]),
+			mask = _mm_movemask_epi8(_mm_cmpeq_epi8(sseVal, sseArr)),
+			(_BitScanForward(&index, mask) ?
 			(d[index + i] = 1, j++, memset(d + i, 0, index * sizeof(*d)),
-			i += index + 1) : i += 16;
-		}
-		else {
-			bool change = false;
-			while ((j > 0) && !change) {
-				auto sseVal = _mm_set1_epi8(p[i]);
-				auto sseArr = _mm_loadu_si128((__m128i *) &rp[M - j - 1]);
-				auto mask = _mm_movemask_epi8(_mm_cmpeq_epi8(sseVal, sseArr));
-				unsigned long index;
-				_BitScanForward(&index, mask) ?
-				(index < j ? change = true, d[i] = ++j : j = 0) : j -= 16;
-			}
-			if (!change) { j = 0; d[i] = j; }
-			i++;
-		}
-		/*for (int m = 0; m < M; m++) {
-			std::cout << d[m] << " ";
-
-		}
-		std::cout << std::endl;*/
+			i += index + 1) : i += 16));
 	}
 
 	for (int m = 0; m < M; m++) {
@@ -114,8 +102,7 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 	{
 		while (j > 0 && p[j] != s[i])
 			j = d[j - 1];
-		if (p[j] == s[i])
-			j++;
+		p[j] == s[i] ? j++ : 0;
 		if (j == M)
 		{
 			free(d);
