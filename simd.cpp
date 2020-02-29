@@ -40,8 +40,7 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 	{
 		while (j > 0 && p[j] != p[i])
 			j = op[j - 1];
-		if (p[j] == p[i])
-			j++;
+		p[j] == p[i] ? j++ : 0;
 		op[i] = j;
 	}
 	//simd
@@ -114,8 +113,7 @@ int seek_substring_KMP(char s[], char p[], char rp[], char rt[])
 	{
 		while (j > 0 && p[j] != s[i])
 			j = d[j - 1];
-		if (p[j] == s[i])
-			j++;
+		p[j] == s[i] ? j++ : 0;
 		if (j == M)
 		{
 			free(d);
